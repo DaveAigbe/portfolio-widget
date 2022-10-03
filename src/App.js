@@ -1,25 +1,38 @@
-import logo from './logo.svg';
-import './App.css';
+import React, {useEffect, useState} from 'react';
+import {ArcElement, Chart as ChartJS, Legend, Tooltip} from 'chart.js';
+import axios from 'axios';
+import Graph from './components/Graph';
+import CircleLoader from './components/CircleLoader';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+ChartJS.register(ArcElement, Tooltip, Legend);
+
+const apiData = async () => {
+    const res = await axios.get('http://portfoliowidgetapi-env.eba-yb2ar4we.us-east-1.elasticbeanstalk.com/workouts/?json=true');
+    const data = await res.data;
+
+    return data;
+};
+
+export default function App() {
+    const [graphData, setGraphData] = useState({});
+    // Loading state, will ensure that something still renders while data is being pulled
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        apiData().then((data) => {
+                setGraphData(data);
+                setLoading(false);
+            }
+        );
+    }, []);
+
+    if (loading) {
+        return (
+            <CircleLoader/>
+        );
+    } else {
+        return (
+            <Graph graphData={graphData}/>
+        );
+    }
 }
-
-export default App;
